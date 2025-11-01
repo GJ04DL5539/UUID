@@ -178,11 +178,10 @@ function encodeDateSection(dateStr){
   let encoded = '';
   for(const c of pre){
     encoded += shiftChar(c, shift);
-    if(Math.random() < 0.5) encoded += randFromCharset(); // noise
+    if(Math.random() < 0.5) encoded += randFromCharset();
   }
 
   encoded = randomCapitalize(encoded);
-
   return randFromCharset() + randFromCharset() + encoded + randFromCharset() + randFromCharset();
 }
 
@@ -229,19 +228,25 @@ async function generateUUID(){
   const dateStr = dd + mm + yyyy;
 
   const sec1 = encodeDateSection(dateStr);
-  const sec2 = randomSection(4);
   const sec3 = generateVersionSection();
   const sec4 = generateSequenceSection();
   const sec5 = await generateNodeSection();
 
-  // Add 5 extra “evil” random sections
+  // 20 entropy sections
+  const entropySections = [];
+  for(let i=0;i<20;i++){
+    const len = Math.floor(Math.random() * 6 + 4); // 4-9 chars
+    entropySections.push(`[${randomSection(len)}]`);
+  }
+
+  // 5 extra “evil” random sections
   const extraSections = [];
   for(let i=0;i<5;i++){
-    const len = Math.floor(Math.random()*6 + 3); // random 3..8 chars
+    const len = Math.floor(Math.random()*6 + 3); // 3–8 chars
     extraSections.push(`[${randomSection(len)}]`);
   }
 
-  const full = `{[lcrnrUUID]}[${sec1}][${sec2}][${sec3}][${sec4}][${sec5}]${extraSections.join('')}{[/lcrnrUUID]}`;
+  const full = `{[lcrnrUUID]}[${sec1}]${entropySections.join('')}[${sec3}][${sec4}][${sec5}]${extraSections.join('')}{[/lcrnrUUID]}`;
   document.getElementById('uuid').textContent = full;
 }
 
@@ -254,7 +259,7 @@ function copyUUID(){
     el.textContent = 'Copied!';
     setTimeout(()=> el.textContent = orig, 900);
   }, ()=>{
-    alert('Copy failed — select and copy manually.');
+    alert('Copy failed :( select and copy manually.');
   });
 }
 </script>
